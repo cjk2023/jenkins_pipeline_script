@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    tools { 
+      maven 'maven3.9'
+    }
+    stages {
+        stage('github clone') {
+            steps {
+                git branch: 'main', url: 'https://github.com/cjk2023/cicd-web-project'; 
+            }
+        }
+        
+        stage('build') {
+            steps {
+                sh '''
+                    echo build start
+                    mvn clean compile package -DskipTests=true
+                '''
+            }
+        }
+
+        stage('deploy') {
+            steps {
+               deploy adapters: [tomcat9(credentialsId: 'deployer_user1', path: '', url: 'http://192.168.11.24:8090/')], contextPath: null, war: '**/*.war'
+            }
+        }
+    }
+}
