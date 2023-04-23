@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    tools { 
+      maven 'maven3.9'
+    }
+    stages {
+        stage('github clone') {
+            steps {
+                git branch: 'main', url: 'https://github.com/cjk2023/cicd-web-project'; 
+            }
+        }
+        
+        stage('build') {
+            steps {
+                sh '''
+                    echo build start
+                    mvn clean compile package -DskipTests=true
+                '''
+            }
+        }
+
+        stage('deploy') {
+            steps {
+               sshPublisher(publishers: [sshPublisherDesc(configName: 'docker-host', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: 'target', sourceFiles: 'target/*.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+            }
+        }
+    }
+}
